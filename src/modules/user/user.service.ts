@@ -5,6 +5,7 @@ import httpStatus from "http-Status";
 import { RegisterUserPayload } from "./user.interface";
 
 
+
 const registerUserIntoDB = async (payload: RegisterUserPayload) => {
   const { name, email, password, profilePhoto } = payload;
   const isUserExist = await prisma.user.findUnique({ where: { email } });
