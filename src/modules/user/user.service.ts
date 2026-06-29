@@ -2,7 +2,9 @@ import { prisma } from "../../lib/prisma";
 import config from "../../config";
 import bcrypt from "bcryptjs";
 import httpStatus from "http-Status";
+import type { Response } from "express";
 import { RegisterUserPayload } from "./user.interface";
+import { json } from "node:stream/consumers";
 
 
 
@@ -31,12 +33,12 @@ const registerUserIntoDB = async (payload: RegisterUserPayload) => {
     },
   });
 
-//   await prisma.profile.create({
-//     data: {
-//       userId: createdUser.id,
-//       profilePhoto,
-//     },
-//   });
+  //   await prisma.profile.create({
+  //     data: {
+  //       userId: createdUser.id,
+  //       profilePhoto,
+  //     },
+  //   });
 
   const user = await prisma.user.findUnique({
     where: {
