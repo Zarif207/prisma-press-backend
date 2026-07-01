@@ -29,19 +29,12 @@ const loginUser = async (payload: ILoginUSer) => {
     refresh_expiration: config.jwt_refresh_expiration,
   });
 
-  //   const accessToken = jwt.sign(jwtPayload, config.jwt_access_secret, {
-  //     expiresIn: config.jwt_access_expiration,
-  //   } as SignOptions);
-
   const accessToken = jwtUtils.createToken(
     jwtPayload,
     config.jwt_access_secret,
     config.jwt_access_expiration as SignOptions,
   );
 
-  //   const refreshToken = jwt.sign(jwtPayload, config.jwt_refresh_secret, {
-  //     expiresIn: config.jwt_refresh_expiration,
-  //   } as SignOptions);
   const refreshToken = jwtUtils.createToken(
     jwtPayload,
     config.jwt_refresh_secret,
