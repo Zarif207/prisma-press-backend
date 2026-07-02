@@ -26,9 +26,19 @@ const getMyProfile = catchAsync(
     console.log(accessToken);
 
     const verifiedToken = jwt.verify(accessToken, config.jwt_access_secret);
-    return verifiedToken;
 
-    res.send("Get my profile");
+    if (!verifiedToken || typeof verifiedToken === "string") {
+      throw new Error("Invalid access token");
+    }
+
+    const profile = await userService.getMyProfileFromDB(verifiedToken.id);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "User profile fetched successfully",
+      data: { profile },
+    });
   }),
 );
 

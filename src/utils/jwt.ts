@@ -13,9 +13,9 @@ const verifyToken = (token: string, secret: string) => {
   try {
     const decoded = jwt.verify(token, secret) as JwtPayload;
     return decoded;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Token verification failed:", error);
-    throw new Error("Invalid token");
+    throw new Error(error.message || "Token verification failed");
   }
 };
 
