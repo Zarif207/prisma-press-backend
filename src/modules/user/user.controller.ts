@@ -5,6 +5,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import jwt from "jsonwebtoken";
 import config from "../../config";
+import { jwtUtils } from "../../utils/jwt";
 
 const registerUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -22,10 +23,11 @@ const registerUser = catchAsync(
 
 const getMyProfile = catchAsync(
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
     const { accessToken } = req.cookies;
     console.log(accessToken);
 
-    const verifiedToken = jwt.verify(accessToken, config.jwt_access_secret);
+    const verifiedToken = jwtUtils.verifyToken(accessToken, config.jwt_access_secret);
 
     if (!verifiedToken || typeof verifiedToken === "string") {
       throw new Error("Invalid access token");
