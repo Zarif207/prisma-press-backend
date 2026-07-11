@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { authService } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
-import httpStatus from "http-Status";
+import httpStatus from "http-status";
 import { truncate } from "fs/promises";
 
 const loginUser = catchAsync(

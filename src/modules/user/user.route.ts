@@ -1,57 +1,53 @@
-import { NextFunction, Request, Response, Router } from "express";
-import { userController } from "./user.controller";
-import { jwtUtils } from "../../utils/jwt";
-import config from "../../config";
+import { Router } from "express";
 import { Role } from "../../../generated/prisma/enums";
+
+import { userController } from "./user.controller";
+import { auth } from "../../middlewares/auth";
 
 const router = Router();
 
-router.post("/register", userController.registerUser);
+router.post("/register", userController.registerUser )
 
-// with middleware
-router.get(
-  "/me",
-  (req: Request, res: Response, next: NextFunction) => {
-    console.log("Middleware before getMyProfile");
-    const { accessToken } = req.cookies;
-    console.log(accessToken);
+router.get("/me",
+    
+//     (req: Request, res: Response, next : NextFunction) => {
+//     console.log(req.cookies);
+//     const {accessToken} = req.cookies;
+//         console.log(accessToken);
+    
+//         const verifiedToken = jwtUtils.verifyToken(accessToken, config.jwt_access_secret);
 
-    const verifiedToken = jwtUtils.verifyToken(
-      accessToken,
-      config.jwt_access_secret,
-    );
+//         if(!verifiedToken.success){
+//             throw new Error(verifiedToken.error);
+//         }
+  
+//     const { email, name, id, role } = verifiedToken.data as JwtPayload;
 
-    const { id, name, email, role } = verifiedToken;
+//     // const requiredRoles = ["ADMIN", "USER", "AUTHOR"];
+//     const requiredRoles = [Role.ADMIN, Role.USER, Role.AUTHOR];
 
-    // requiredRole = ["admin", "user", "author"];
-    const requiredRole = [Role.ADMIN, Role.USER, Role.AUTHOR];
+//     if(!requiredRoles.includes(role)){
+//         return res.status(403).json({
+//             success: false,
+//             statusCode: httpStatus.FORBIDDEN,
+//             message: "Forbidden. You don't have permission to access this resource."
+//         })
+//     }
 
-    if (!requiredRole.includes(role)) {
-        return res.status(403).json({
-            success: false,
-            status: 403,
-            message: "Forbidden: You are not authorized to access this resource",
-        });
-    }
+//     req.user = {
+//         email,
+//         name,
+//         id,
+//         role
+//     };
+//     next();
+// }, 
 
-    if (requiredRole.length > 0 && !requiredRole.includes(role)) {
-      return res.status(403).json({
-        success: false,
-        status: 403,
-        message: "Forbidden: You are not authorized to access this resource",
-      });
-    }
+auth(Role.ADMIN, Role.USER, Role.AUTHOR),
 
-    if (!verifiedToken || typeof verifiedToken === "string") {
-      return res.status(401).json({
-        success: false,
-        status: 401,
-        message: "Unauthorized: Invalid access token",
-      });
-    }
-    next();
-  },
-  userController.getMyProfile,
-);
+userController.getMyProfile);
+
+
+router.put("/my-profile", auth(Role.ADMIN, Role.USER, Role.AUTHOR), userController.updateMyProfile);
 
 export const userRouter = router;

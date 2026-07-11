@@ -1,20 +1,33 @@
-import { ILoginUSer } from "./auth.interface";
-import { prisma } from "../../lib/prisma";
 import bcrypt from "bcryptjs";
-import jwt, { SignOptions } from "jsonwebtoken";
+import { SignOptions } from "jsonwebtoken";
 import config from "../../config";
+import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
+import { ILoginUSer } from "./auth.interface";
 
 const loginUser = async (payload: ILoginUSer) => {
   const { email, password } = payload;
+
+  // const user = await prisma.user.findUnique({
+  //     where : {email}
+  // })
+
+  // if(!user){
+  //     throw new Error("User not found");
+  // }
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { email },
   });
 
+  if (user.activeStatus === "BLOCKED") {
+    throw new Error("Your account has been blocked. Please contact support.");
+  }
+
   const isPasswordMatched = await bcrypt.compare(password, user.password);
+
   if (!isPasswordMatched) {
-    throw new Error("password is incorrect");
+    throw new Error("Password is incorrect");
   }
 
   const jwtPayload = {
@@ -24,24 +37,38 @@ const loginUser = async (payload: ILoginUSer) => {
     role: user.role,
   };
 
-  console.log({
-    access_expiration: config.jwt_access_expiration,
-    refresh_expiration: config.jwt_refresh_expiration,
-  });
+  // const accessToken = jwt.sign(
+  //     jwtPayload,
+  //     config.jwt_access_secret,
+  //     {
+  //         expiresIn : config.jwt_access_expires_in
+  //     } as SignOptions
+  // )
 
   const accessToken = jwtUtils.createToken(
     jwtPayload,
     config.jwt_access_secret,
-    config.jwt_access_expiration,
+    config.jwt_access_expires_in as SignOptions,
   );
+
+  // const refreshToken = jwt.sign(
+  //     jwtPayload,
+  //     config.jwt_refresh_secret,
+  //     {
+  //         expiresIn : config.jwt_refresh_expires_in
+  //     } as SignOptions
+  // );
 
   const refreshToken = jwtUtils.createToken(
     jwtPayload,
     config.jwt_refresh_secret,
-    config.jwt_refresh_expiration,
+    config.jwt_refresh_expires_in as SignOptions,
   );
 
-  return { accessToken, refreshToken };
+  return {
+    accessToken,
+    refreshToken,
+  };
 };
 
 export const authService = {

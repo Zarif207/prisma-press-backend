@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, RequestHandler } from "express";
-import httpStatus from "http-Status";
+import httpStatus from "http-status";
 
 export const catchAsync = (fn: RequestHandler) => {
   return async (req: Request, res: Response, next: NextFunction) => {
