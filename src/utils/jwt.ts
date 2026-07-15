@@ -25,7 +25,7 @@ const verifyToken = (token : string, secret : string) => {
             success: false,
             error : error.message
         }
-   }
+   } 
 }
 
 

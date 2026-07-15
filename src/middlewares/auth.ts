@@ -14,22 +14,25 @@ declare global {
         name: string;
         id: string;
         role: Role;
-      }
+      };
     }
   }
 }
 
+// auth(Role.ADMIN, Role.USER, Role.Author)
+// auth() => ...requiredRoles => [Role.ADMIN, Role.USER, Role.AUTHOR]
 export const auth = (...requiredRoles: Role[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.cookies.accessToken ?
-      req.cookies.accessToken
-      :
-      req.headers.authorization?.startsWith("Bearer ") ?
-      req.headers.authorization?.split(" ")[1]
-      : req.headers.authorization;
+    const token = req.cookies.accessToken
+      ? req.cookies.accessToken
+      : req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization?.split(" ")[1]
+        : req.headers.authorization;
 
     if (!token) {
-      throw new Error("You are not logged in. Please log in to access this resource.");
+      throw new Error(
+        "You are not logged in. Please log in to access this resource.",
+      );
     }
 
     const verifiedToken = jwtUtils.verifyToken(token, config.jwt_access_secret);
@@ -38,14 +41,10 @@ export const auth = (...requiredRoles: Role[]) => {
       throw new Error(verifiedToken.error);
     }
 
-    const { email, name, id, role } = verifiedToken.data as JwtPayload;
-
-    if (requiredRoles.length && !requiredRoles.includes(role)) {
-      throw new Error("Forbidden. You don't have permission to access this resource.");
-    }
+    const { id } = verifiedToken.data as JwtPayload; // only `id` needed from the token now
 
     const user = await prisma.user.findUnique({
-      where: { id }
+      where: { id }, // ✅ only filter by the actual unique key
     });
 
     if (!user) {
@@ -56,7 +55,22 @@ export const auth = (...requiredRoles: Role[]) => {
       throw new Error("Your account has been blocked. Please contact support.");
     }
 
-    req.user = { email, name, id, role };
+    console.log("user.role from DB:", user.role);
+    console.log("requiredRoles allowed:", requiredRoles);
+
+    // ✅ check the role from the freshly-fetched DB user, not the token
+    if (requiredRoles.length && !requiredRoles.includes(user.role as Role)) {
+      throw new Error(
+        "Forbidden. You don't have permission to access this resource.",
+      );
+    }
+
+    req.user = {
+      email: user.email,
+      name: user.name,
+      id: user.id,
+      role: user.role as Role, // ✅ current role
+    };
 
     next();
   });
