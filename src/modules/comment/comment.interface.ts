@@ -1,18 +1,16 @@
-import { PostStatus } from "../../../generated/prisma/enums";
+import { CommentStatus } from "../../../generated/prisma/enums";
 
 export interface ICreateCommentPayload {
-  title: string;
-  content: string;
-  thumbNail?: string;
-  isFeatured?: boolean;
-  status?: PostStatus;
-  postId: string;
+    postId: string;
+    authorId: string;
+    content: string;
 }
 
-export interface IUpdateCommentPayload {
-  title?: string;
-  content: string;
-  thumbNail?: string;
-  isFeatured?: boolean;
-  status?: PostStatus;
+export interface IUpdateCommentPayload { 
+    content ?: string, 
+    status ?: CommentStatus 
+}
+
+export interface IModerateCommentPayload {
+    status: CommentStatus
 }
