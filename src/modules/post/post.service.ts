@@ -1,4 +1,5 @@
 import { CommentStatus, PostStatus } from "../../../generated/prisma/enums";
+import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import { ICreatePostPayload, IUpdatePostPayload } from "./post.interface";
 
@@ -13,8 +14,82 @@ const createPost = async (payload: ICreatePostPayload, userId: string) => {
   return result;
 };
 
-const getAllPosts = async () => {
+interface iPostQuery extends PostWhereInput {
+  // post models's field
+  title?: string;
+  content?: string;
+  searchTerm?: string;
+  page?: string;
+  limit?: string;
+  sortBy?: string;
+  sortOrder?: string;
+}
+
+const getAllPosts = async (query: any) => {
   const posts = await prisma.post.findMany({
+    // filtering / exact match with AND operator
+    // where: {
+    //   AND: [
+    //     {
+    //       title: "My 3rd Post",
+    //     },
+    //     { content: "Ronaldo" },
+    //     {
+    //       tags: {
+    //         equals: ["typescript", "prisma", "express"],
+    //       },
+    //     },
+    //   ],
+    // },
+
+    // searching or partial match
+    // where: {
+    //   title: {
+    //     contains: "ronaldo",
+    //     mode: "insensitive",
+    //   },
+    //   content: {
+    //     contains: "ronaldo",
+    //     mode: "insensitive",
+    //   },
+    // },
+
+    // // searching or partial search with or operator
+    // where: {
+    //   OR: [
+    //     {
+    //       title: { contains: "ronaldo", mode: "insensitive" },
+    //     },
+    //     {
+    //       content: { contains: "ronaldo", mode: "insensitive" },
+    //     },
+    //   ],
+    // },
+
+    // // combining search (OR) and filtering (AND)
+    // where: {
+    //   // filtering and searching combined
+    //   AND: [
+    //     {
+    //       // searching
+    //       OR: [
+    //         {
+    //           title: { contains: "messi", mode: "insensitive" },
+    //         },
+    //         {
+    //           content: {
+    //             contains: "messi",
+    //             mode: "insensitive",
+    //           },
+    //         },
+    //       ],
+    //     },
+    //     // filtering
+    //     { title: "Ronaldo Nazario" },
+    //     { content: "Ronaldo" },
+    //   ],
+    // },
+
     include: {
       author: {
         omit: {
